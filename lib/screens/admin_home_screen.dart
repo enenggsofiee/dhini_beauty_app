@@ -125,6 +125,82 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
+  Future<void> _deleteBooking(int bookingId, String clientName, String treatmentName) async {
+    final confirm = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassContainer(
+        padding: const EdgeInsets.all(32),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 60, height: 60,
+              decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), shape: BoxShape.circle),
+              child: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 36),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Hapus Data Booking?',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Constants.textDark),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Apakah Anda yakin ingin menghapus data booking untuk "$treatmentName" atas nama "$clientName"?',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Constants.textLight, fontSize: 16),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      side: const BorderSide(color: Constants.textLight),
+                    ),
+                    child: const Text('Batal', style: TextStyle(color: Constants.textDark, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Ya, Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+
+    final result = await _apiService.deleteBooking(bookingId);
+
+    if (result['success']) {
+      await _loadAllBookings();
+      _showSnackBar(result['message'], isError: false);
+    } else {
+      setState(() => _isLoading = false);
+      _showSnackBar(result['message'], isError: true);
+    }
+  }
+
   Future<void> _logout() async {
     await _apiService.logout();
     if (mounted) {
@@ -249,25 +325,46 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(booking['nama_lengkap'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Constants.textDark)),
-                                          GestureDetector(
-                                            onTap: () => _updateStatus(int.tryParse(booking['id'].toString()) ?? 0, status),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                              decoration: BoxDecoration(
-                                                color: _getStatusColor(status).withOpacity(0.15),
-                                                borderRadius: BorderRadius.circular(20),
-                                                border: Border.all(color: _getStatusColor(status).withOpacity(0.5)),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(status.toUpperCase(), style: TextStyle(color: _getStatusColor(status), fontWeight: FontWeight.bold, fontSize: 11)),
-                                                  const SizedBox(width: 4),
-                                                  Icon(Icons.edit, size: 12, color: _getStatusColor(status)),
-                                                ],
-                                              ),
+                                          Expanded(
+                                            child: Text(
+                                              booking['nama_lengkap'], 
+                                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Constants.textDark),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
+                                          ),
+                                          Row(
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () => _updateStatus(int.tryParse(booking['id'].toString()) ?? 0, status),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                  decoration: BoxDecoration(
+                                                    color: _getStatusColor(status).withOpacity(0.15),
+                                                    borderRadius: BorderRadius.circular(20),
+                                                    border: Border.all(color: _getStatusColor(status).withOpacity(0.5)),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Text(status.toUpperCase(), style: TextStyle(color: _getStatusColor(status), fontWeight: FontWeight.bold, fontSize: 11)),
+                                                      const SizedBox(width: 4),
+                                                      Icon(Icons.edit, size: 12, color: _getStatusColor(status)),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(),
+                                                onPressed: () => _deleteBooking(
+                                                  int.tryParse(booking['id'].toString()) ?? 0, 
+                                                  booking['nama_lengkap'].toString(),
+                                                  booking['nama_treatment'].toString()
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
