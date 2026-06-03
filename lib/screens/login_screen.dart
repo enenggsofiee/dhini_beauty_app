@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import '../utils/constants.dart';
 import '../utils/glassmorphism.dart';
@@ -52,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      final result = await _apiService.login(
+      final result = await Provider.of<AuthProvider>(context, listen: false).login(
         _usernameController.text.trim(),
         _passwordController.text.trim(),
       );
@@ -60,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() => _isLoading = false);
 
       if (result['success']) {
-        await _apiService.saveUserSession(result['user']);
         final role = result['user']['role'] ?? 'customer';
         if (mounted) {
           Navigator.pushReplacement(
@@ -83,6 +84,11 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
+      try {
+        await googleSignIn.signOut();
+      } catch (e) {
+        print('Info: googleSignIn.signOut() error: $e');
+      }
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser != null) {
@@ -105,10 +111,9 @@ class _LoginScreenState extends State<LoginScreen>
             'register_if_new': false, // Pengecekan awal apakah sudah terdaftar
           };
           
-          final result = await _apiService.googleLogin(authData);
+          final result = await Provider.of<AuthProvider>(context, listen: false).googleLogin(authData);
 
           if (result['success']) {
-            await _apiService.saveUserSession(result['user']);
             final role = result['user']['role'] ?? 'customer';
             if (mounted) {
               Navigator.pushReplacement(
@@ -240,10 +245,9 @@ class _LoginScreenState extends State<LoginScreen>
                                   'nama_lengkap': displayName,
                                   'register_if_new': true,
                                 };
-                                final result = await _apiService.googleLogin(authData);
+                                final result = await Provider.of<AuthProvider>(context, listen: false).googleLogin(authData);
                                 setSheetState(() => isSheetLoading = false);
                                 if (result['success']) {
-                                  await _apiService.saveUserSession(result['user']);
                                   final role = result['user']['role'] ?? 'customer';
                                   if (mounted) {
                                     Navigator.pop(context); // Close bottom sheet
@@ -341,6 +345,9 @@ class _LoginScreenState extends State<LoginScreen>
                                       setSheetState(() => isSheetLoading = false);
                                       if (result['success']) {
                                         await _apiService.saveUserSession(result['user']);
+                                        if (mounted) {
+                                          await Provider.of<AuthProvider>(context, listen: false).checkLoginStatus();
+                                        }
                                         final role = result['user']['role'] ?? 'customer';
                                         if (mounted) {
                                           Navigator.pop(context); // Close bottom sheet

@@ -196,6 +196,28 @@ class ApiService {
     }
   }
 
+  // Delete Booking (Admin & Customer)
+  Future<Map<String, dynamic>> deleteBooking(int bookingId, {int? userId}) async {
+    print('🔄 Menghapus booking ID: $bookingId' + (userId != null ? ' untuk user: $userId' : ''));
+    try {
+      final Map<String, dynamic> bodyData = {'booking_id': bookingId};
+      if (userId != null) {
+        bodyData['user_id'] = userId;
+      }
+      final response = await http.post(
+        Uri.parse('${Constants.baseUrl}/delete_booking.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(bodyData),
+      );
+      print('📡 Delete booking response: ${response.body}');
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('❌ Delete booking error: $e');
+      return {'success': false, 'message': 'Gagal menghapus data booking: $e'};
+    }
+  }
+
+
   // ==================== USER SESSION ====================
   
   // Save user session
