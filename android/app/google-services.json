@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "206151670403",
+    "project_id": "dhini-beauty",
+    "storage_bucket": "dhini-beauty.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206151670403:android:5f81eeb9793f2840e1d9b6",
+        "android_client_info": {
+          "package_name": "com.example.dhini_beauty_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206151670403-huip16lb9c23v04jf60kt1ulbb0hs0df.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.dhini_beauty_app",
+            "certificate_hash": "674c7c23497c9a96032016b33572c5215d6db870"
+          }
+        },
+        {
+          "client_id": "206151670403-b2cv1q7rqkijdvhkmuf6vd1pgh92lpj1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBk2pLe7CmKJpx4fihavQ2IxuSZ4-Ffkxg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "206151670403-b2cv1q7rqkijdvhkmuf6vd1pgh92lpj1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
